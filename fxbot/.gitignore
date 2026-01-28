@@ -1,0 +1,10 @@
+# Secrets
+.env
+
+# Database
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Dependencies
+node_modules/

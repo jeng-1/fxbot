@@ -1,0 +1,15 @@
+module.exports = [
+  "o3",
+  "shatters",
+  "mv",
+  "nest",
+  "adv nest",
+  "citadel",
+  "fungal",
+  "kog",
+  "akog",
+  "cult",
+  "void",
+  "spen",
+  "event",
+];
