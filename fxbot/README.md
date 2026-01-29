@@ -19,7 +19,17 @@ fxbot/                     # Main Discord Bot
 │   ├── verify/            # Verification system
 │   ├── runsystem/         # Raid management
 │   └── log/               # Statistics commands
-└── utils/                 # Utility modules
+├── services/              # Core services
+│   ├── storage.js         # SQLite database operations
+│   ├── permissions.js     # Role permission checks
+│   ├── realmeye.js        # RealmEye API client
+│   └── timers.js          # Headcount/run timers
+├── data/                  # Static data
+│   └── raidDungeons.js    # Dungeon definitions
+├── events/                # Discord event handlers
+│   └── interactionCreate.js
+└── scripts/               # Utility scripts
+    └── clearGlobalCommands.js
 
 realmeye-scraper/          # RealmEye API Server
 ├── server.js              # Express API
@@ -117,8 +127,12 @@ Create these channels, then right-click each > **Copy Channel ID**:
 | Channel | Purpose |
 |---------|---------|
 | Raid Channel | Where headcounts and run announcements are posted |
+| Raid Commands Channel | Where raid commands are used |
+| Competent Channel | Competent raider headcount/run channel |
+| Competent Commands Channel | Where competent commands are used |
 | Verification Log | Logs verification events |
 | Run Log | Logs completed runs |
+| Key Log | Logs key/vial/rune contributions |
 | Roles Log | Logs role changes |
 
 ### 5. Configure Environment Variables
@@ -144,14 +158,18 @@ CRACKERJACK_STAFF_ROLE_ID=your_crackerjack_staff_role_id
 
 # Channel IDs
 RAID_CHANNEL_ID=your_raid_channel_id
+RAID_COMMANDS_CHANNEL_ID=your_raid_commands_channel_id
+COMPETENT_CHANNEL_ID=your_competent_channel_id
+COMPETENT_COMMANDS_CHANNEL_ID=your_competent_commands_channel_id
 VERIFICATION_LOG_CHANNEL_ID=your_verification_log_channel_id
 RUN_LOG_CHANNEL_ID=your_run_log_channel_id
+KEY_LOG_CHANNEL_ID=your_key_log_channel_id
 ROLES_LOG_CHANNEL_ID=your_roles_log_channel_id
 ```
 
 ### 6. Set Up Custom Emojis (Optional)
 
-The bot uses custom Discord emojis for dungeon portals, keys, and runes. Upload these to your server and update the emoji IDs in `utils/raidDungeons.js`.
+The bot uses custom Discord emojis for dungeon portals, keys, and runes. Upload these to your server and update the emoji IDs in `data/raidDungeons.js`.
 
 ## Running the Bot
 
@@ -209,10 +227,12 @@ pm2 startup
 
 | Command | Description | Permission |
 |---------|-------------|------------|
-| `/logkeys <user> <quantity>` | Log key contributions | Staff |
-| `/logruns <dungeon> <user> <quantity>` | Log completed runs | Staff |
+| `/log key <user> <quantity>` | Log key contributions | Staff |
+| `/log vial <user> <quantity>` | Log vial contributions | Staff |
+| `/log rune <user> <quantity>` | Log rune contributions | Staff |
+| `/log runs <dungeon> <user> <quantity>` | Log completed runs | Staff |
 | `/leaderboard <keys\|runs>` | Show top 10 leaderboard | Staff |
-| `/stats <keys\|runs> [user]` | Show user statistics | Staff |
+| `/profile [user]` | Show user's keys, vials, runes, and runs stats | Staff |
 | `/quota` | Check staff run quotas | Staff |
 
 ### Other
