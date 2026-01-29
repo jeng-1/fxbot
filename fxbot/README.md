@@ -116,10 +116,10 @@ Create these roles in your server (or use existing ones), then right-click each 
 |------|---------|
 | Verified | Assigned to verified users |
 | Staff | Can manage raids and log stats |
-| Moderator | Can end others' headcounts |
+| Moderator | Staff management |
 | Admin | Full permissions |
-| Crackerjack | Community team member |
-| Crackerjack Staff | Can promote to Crackerjack |
+| Crackerjack | High efficiency raiding role |
+| Crackerjack Staff | High efficiency run organizer |
 
 #### Channel IDs
 Create these channels, then right-click each > **Copy Channel ID**:
