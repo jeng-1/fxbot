@@ -2,6 +2,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { getDungeonMeta, DUNGEON_CHOICES } = require("../../data/raidDungeons");
 const config = require("../../config");
+const { setPendingRun, deletePendingRun } = require("../../services/activeRuns");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -67,26 +68,57 @@ module.exports = {
       return;
     }
 
-    const lines = [
+    // Initial embed hides the party name
+    const hiddenLines = [
       `**Dungeon:** ${displayedDungeonName}`,
       `**Leader:** ${leader}`,
-      `**Party:** ${partyName}`,
+      `**Party:** Revealing in 15 seconds...`,
     ];
 
-    const embed = new EmbedBuilder()
+    const hiddenEmbed = new EmbedBuilder()
       .setTitle(`Run started: ${displayedDungeonName}`)
-      .setDescription(lines.join("\n"))
+      .setDescription(hiddenLines.join("\n"))
+      .setFooter({ text: "Nitro Boosters can react below for early access!" })
       .setTimestamp();
 
     // Post to raid channel with @here
     const runMsg = await raidChannel.send({
       content: "@here",
-      embeds: [embed],
+      embeds: [hiddenEmbed],
     });
+
+    // Add nitro reaction and store party name for early access
+    try {
+      await runMsg.react(config.NITRO_EMOJI_ID);
+      setPendingRun(runMsg.id, partyName);
+    } catch (err) {
+      console.error("Failed to add nitro reaction:", err);
+    }
 
     // Acknowledge user
     await interaction.editReply({
-      content: `Run for **${displayedDungeonName}** announced in ${raidChannel}.` });
+      content: `Run for **${displayedDungeonName}** announced in ${raidChannel}. Party name reveals in 15 seconds.` });
+
+    // Reveal party name after 15 seconds
+    setTimeout(async () => {
+      try {
+        const revealedLines = [
+          `**Dungeon:** ${displayedDungeonName}`,
+          `**Leader:** ${leader}`,
+          `**Party:** ${partyName}`,
+        ];
+
+        const revealedEmbed = new EmbedBuilder()
+          .setTitle(`Run started: ${displayedDungeonName}`)
+          .setDescription(revealedLines.join("\n"))
+          .setTimestamp();
+
+        await runMsg.edit({ embeds: [revealedEmbed] });
+        deletePendingRun(runMsg.id);
+      } catch (err) {
+        console.error("Failed to reveal party name:", err);
+      }
+    }, 15000);
 
     // CLEAN LOG MESSAGE (no emojis)
     try {

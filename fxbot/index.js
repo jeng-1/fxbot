@@ -5,7 +5,7 @@ require("dotenv").config();
 
 const fs = require("fs");
 const path = require("path");
-const { Client, Collection, GatewayIntentBits, REST, Routes } = require("discord.js");
+const { Client, Collection, GatewayIntentBits, Partials, REST, Routes } = require("discord.js");
 
 const config = require("./config");
 
@@ -21,7 +21,12 @@ if (!config.token || !config.clientId || !config.guildId) {
 // Create client
 // -----------------------------------------------------------------------------
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds,GatewayIntentBits.GuildMembers],
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageReactions
+  ],
+  partials: [Partials.Message, Partials.Reaction]
 });
 
 client.commands = new Collection();
