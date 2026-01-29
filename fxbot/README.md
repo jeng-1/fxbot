@@ -169,7 +169,7 @@ ROLES_LOG_CHANNEL_ID=your_roles_log_channel_id
 
 ### 6. Set Up Custom Emojis (Optional)
 
-The bot uses custom Discord emojis for dungeon portals, keys, and runes. Upload these to your server and update the emoji IDs in `data/raidDungeons.js`.
+The bot uses custom Discord emojis for dungeon portals, keys, and runes. Upload these to the both using the developer portal and update the emoji IDs in `data/raidDungeons.js`.
 
 ## Running the Bot
 
