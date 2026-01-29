@@ -1,7 +1,7 @@
 // commands/verify/manual.js
 
 const config = require("../../config");
-const { requireStaff } = require("../../utils/permissions");
+const { requireStaff } = require("../../services/permissions");
 
 // ----------------------------
 // /verify manual user:<user> ign:<ign> (staff only)
@@ -59,7 +59,7 @@ async function handleManual(interaction) {
       const logChannel = await interaction.client.channels.fetch(logChannelId);
       if (logChannel) {
         await logChannel.send(
-          `Staff user <@${interaction.user.id}> manually verified <@${targetUser.id}> as **${ign}**.`
+          `[MANUAL] <@${interaction.user.id}> verified <@${targetUser.id}> as **${ign}**.`
         );
       }
     } catch (err) {

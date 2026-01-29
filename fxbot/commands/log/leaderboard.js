@@ -7,13 +7,15 @@
 // - allowedMentions locked to only the users included
 
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
-const { getLeaderboard } = require("../../utils/storage");
-const { requireStaff } = require("../../utils/permissions");
+const { getLeaderboard } = require("../../services/storage");
+const { requireStaff } = require("../../services/permissions");
 
 module.exports = {
+  skipDefer: true,
+
   data: new SlashCommandBuilder()
     .setName("leaderboard")
-    .setDescription("Show all-time and weekly top 10 for keys or runs.")
+    .setDescription("Show all-time and weekly top 10.")
     .addStringOption((option) =>
       option
         .setName("type")
@@ -21,6 +23,8 @@ module.exports = {
         .setRequired(true)
         .addChoices(
           { name: "Keys", value: "keys" },
+          { name: "Vials", value: "vials" },
+          { name: "Runes", value: "runes" },
           { name: "Runs", value: "runs" }
         )
     ),

@@ -1,6 +1,6 @@
 // commands/runsystem/startrun.js
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const { getDungeonMeta } = require("../../utils/raidDungeons");
+const { getDungeonMeta, DUNGEON_CHOICES } = require("../../data/raidDungeons");
 const config = require("../../config");
 
 module.exports = {
@@ -12,21 +12,7 @@ module.exports = {
         .setName("dungeon")
         .setDescription("Dungeon to run")
         .setRequired(true)
-        .addChoices(
-          { name: "Oryx's Sanctuary (O3)", value: "o3" },
-          { name: "Shatters", value: "shatters" },
-          { name: "Moonlight Village", value: "mv" },
-          { name: "Nest", value: "nest" },
-          { name: "Plagued Nest (adv nest)", value: "adv nest" },
-          { name: "Ice Citadel", value: "citadel" },
-          { name: "Fungal Cavern", value: "fungal" },
-          { name: "Kogbold Steamworks", value: "kog" },
-          { name: "Advanced Kogbold Steamworks", value: "akog" },
-          { name: "Cultists Hideout", value: "cult" },
-          { name: "Void", value: "void" },
-          { name: "Spectral Penitentiary", value: "spen" },
-          { name: "Event", value: "event" }
-        )
+        .addChoices(...DUNGEON_CHOICES)
     )
     .addStringOption((opt) =>
       opt
@@ -54,17 +40,30 @@ module.exports = {
         ? customDungeonName
         : dungeonMeta.name;
 
-    // Fetch raid channel
+    // Determine output channel based on command channel
+    let targetChannelId;
+    if (interaction.channelId === config.RAID_COMMANDS_CHANNEL_ID) {
+      targetChannelId = config.RAID_CHANNEL_ID;
+    } else if (interaction.channelId === config.COMPETENT_COMMANDS_CHANNEL_ID) {
+      targetChannelId = config.COMPETENT_CHANNEL_ID;
+    } else {
+      await interaction.editReply({
+        content: "This command can only be used in raid or competent command channels.",
+      });
+      return;
+    }
+
+    // Fetch target channel
     let raidChannel;
     try {
-      raidChannel = await interaction.client.channels.fetch(config.RAID_CHANNEL_ID);
+      raidChannel = await interaction.client.channels.fetch(targetChannelId);
     } catch (err) {
-      console.error("Failed to fetch raid channel:", err);
+      console.error("Failed to fetch target channel:", err);
     }
 
     if (!raidChannel || !raidChannel.isTextBased()) {
       await interaction.editReply({
-        content: "I could not find the raid channel. Please check RAID_CHANNEL_ID in the env/config." });
+        content: "I could not find the target channel. Please check channel IDs in the env/config." });
       return;
     }
 

@@ -1,4 +1,4 @@
-// utils/raidDungeons.js
+// data/raidDungeons.js
 
 // Central mapping for dungeon params to display name and emojis.
 // All emojis are the custom ones you provided, as strings.
@@ -113,12 +113,23 @@ function getDungeonMeta(paramRaw) {
   return {
     param: paramRaw,
     name: paramRaw,
-    portalEmoji: "í ½íºª",
-    keyEmoji: "í ½í·ï¸",
+    portalEmoji: "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+    keyEmoji: "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¸",
   };
 }
 
+// List of valid dungeon param keys (for command choices, etc.)
+const DUNGEON_LIST = Object.keys(DUNGEONS);
+
+// Slash command choices generated from DUNGEONS
+const DUNGEON_CHOICES = Object.values(DUNGEONS).map((d) => ({
+  name: d.name,
+  value: d.param,
+}));
+
 module.exports = {
   DUNGEONS,
+  DUNGEON_LIST,
+  DUNGEON_CHOICES,
   getDungeonMeta,
 };

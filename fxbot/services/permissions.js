@@ -1,4 +1,4 @@
-// utils/permissions.js
+// services/permissions.js
 // Simple helper to restrict commands to staff.
 
 const config = require("../config");

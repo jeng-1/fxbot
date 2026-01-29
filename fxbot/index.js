@@ -79,49 +79,30 @@ async function registerCommands() {
 }
 
 // -----------------------------------------------------------------------------
-// Interaction handler
+// Load event handlers (from ./events)
 // -----------------------------------------------------------------------------
-const ephemeralCommands = new Set(["help","verify"]);
-const skipDeferCommands = new Set(["leaderboard", "quota"]); // needed for silent notification flags
+function loadEvents(eventsDir) {
+  if (!fs.existsSync(eventsDir)) return;
 
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  const eventFiles = fs.readdirSync(eventsDir).filter((f) => f.endsWith(".js"));
 
-  try {
-    const command = client.commands.get(interaction.commandName);
-    if (!command) {
-      if (interaction.deferred || interaction.replied) {
-        await interaction.editReply("Unknown command.");
-      } else {
-        await interaction.reply({ content: "Unknown command.", ephemeral: true });
-      }
-      return;
+  for (const file of eventFiles) {
+    const filePath = path.join(eventsDir, file);
+    // eslint-disable-next-line global-require, import/no-dynamic-require
+    const event = require(filePath);
+
+    if (!event.name || !event.execute) {
+      console.warn(`Skipping ${filePath} - missing "name" or "execute" export.`);
+      continue;
     }
 
-    // For /leaderboard and /quota we do not defer, so the command can send
-    // a single message with SuppressNotifications.
-    if (!skipDeferCommands.has(interaction.commandName)) {
-      await interaction.deferReply({
-        ephemeral: ephemeralCommands.has(interaction.commandName),
-      });
-    }
+    console.log(`Loaded event: ${event.name} from ${filePath}`);
 
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(`Error executing ${interaction.commandName}:`, error);
-
-    try {
-      const msg =
-        "There was an error while executing this command. Please try again later.";
-
-      if (interaction.deferred || interaction.replied) {
-        await interaction.editReply(msg);
-      } else {
-        await interaction.reply({ content: msg, ephemeral: true });
-      }
-    } catch (_) {}
+    client.on(event.name, (...args) => event.execute(...args, client));
   }
-});
+}
+
+loadEvents(path.join(__dirname, "events"));
 
 // -----------------------------------------------------------------------------
 // Startup

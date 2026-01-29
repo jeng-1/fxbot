@@ -1,12 +1,12 @@
 // commands/verify/startConfirm.js
 
 const config = require("../../config");
-const { getRealmeyeProfile } = require("../../utils/realmeye");
+const { getRealmeyeProfile } = require("../../services/realmeye");
 const {
   createVerificationSession,
   getPendingVerification,
   completeVerification,
-} = require("../../utils/storage");
+} = require("../../services/storage");
 
 // ----------------------------
 // /verify start <ign>
@@ -47,7 +47,7 @@ async function handleStart(interaction) {
       const logChannel = await interaction.client.channels.fetch(logChannelId);
       if (logChannel) {
         await logChannel.send(
-          `User <@${userId}> started verification with IGN **${ign}**.`
+          `[START] <@${userId}> started verification with IGN **${ign}**.`
         );
       }
     } catch (err) {
@@ -164,7 +164,7 @@ async function handleConfirm(interaction) {
       const logChannel = await interaction.client.channels.fetch(logChannelId);
       if (logChannel) {
         await logChannel.send(
-          `User <@${userId}> has verified with IGN **${ignOnPage}**.`
+          `[VERIFY] <@${userId}> verified as **${ignOnPage}**.`
         );
       }
     } catch (err) {

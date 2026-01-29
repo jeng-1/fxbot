@@ -1,4 +1,4 @@
-// utils/storage.js
+// services/storage.js
 // SQLite storage for keys and runs, plus in memory verification and runs.
 
 const path = require("path");
@@ -28,10 +28,28 @@ CREATE TABLE IF NOT EXISTS runs_history (
   timestamp INTEGER NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS vials_history (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id   TEXT NOT NULL,
+  quantity  INTEGER NOT NULL,
+  timestamp INTEGER NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS runes_history (
+  id        INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id   TEXT NOT NULL,
+  quantity  INTEGER NOT NULL,
+  timestamp INTEGER NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS idx_keys_user ON keys_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_keys_timestamp ON keys_history(timestamp);
 CREATE INDEX IF NOT EXISTS idx_runs_user ON runs_history(user_id);
 CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON runs_history(timestamp);
+CREATE INDEX IF NOT EXISTS idx_vials_user ON vials_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_vials_timestamp ON vials_history(timestamp);
+CREATE INDEX IF NOT EXISTS idx_runes_user ON runes_history(user_id);
+CREATE INDEX IF NOT EXISTS idx_runes_timestamp ON runes_history(timestamp);
 `);
 
 function nowMs() {
@@ -92,7 +110,7 @@ setInterval(() => {
 // -----------------------------
 
 function logKeys(userId, quantity) {
-  if (!Number.isFinite(quantity) || quantity <= 0) return;
+  if (!Number.isFinite(quantity) || quantity === 0) return;
 
   const stmt = db.prepare(
     "INSERT INTO keys_history (user_id, quantity, timestamp) VALUES (?, ?, ?)"
@@ -101,7 +119,7 @@ function logKeys(userId, quantity) {
 }
 
 function logRuns(dungeon, userId, quantity) {
-  if (!Number.isFinite(quantity) || quantity <= 0) return;
+  if (!Number.isFinite(quantity) || quantity === 0) return;
 
   const stmt = db.prepare(
     "INSERT INTO runs_history (user_id, dungeon, quantity, timestamp) VALUES (?, ?, ?, ?)"
@@ -109,15 +127,36 @@ function logRuns(dungeon, userId, quantity) {
   stmt.run(userId, dungeon, quantity, nowMs());
 }
 
-// kind: "keys" or "runs"
+function logVials(userId, quantity) {
+  if (!Number.isFinite(quantity) || quantity === 0) return;
+
+  const stmt = db.prepare(
+    "INSERT INTO vials_history (user_id, quantity, timestamp) VALUES (?, ?, ?)"
+  );
+  stmt.run(userId, quantity, nowMs());
+}
+
+function logRunes(userId, quantity) {
+  if (!Number.isFinite(quantity) || quantity === 0) return;
+
+  const stmt = db.prepare(
+    "INSERT INTO runes_history (user_id, quantity, timestamp) VALUES (?, ?, ?)"
+  );
+  stmt.run(userId, quantity, nowMs());
+}
+
+// kind: "keys", "runs", "vials", or "runes"
 // period: "allTime" or "weekly"
 function getLeaderboard(kind, period = "allTime") {
   const cutoff = sevenDaysAgoMs();
 
-  const table =
-    kind === "keys" ? "keys_history"
-    : kind === "runs" ? "runs_history"
-    : null;
+  const tableMap = {
+    keys: "keys_history",
+    runs: "runs_history",
+    vials: "vials_history",
+    runes: "runes_history",
+  };
+  const table = tableMap[kind];
 
   if (!table) return [];
 
@@ -146,20 +185,24 @@ function getLeaderboard(kind, period = "allTime") {
   return rows;
 }
 
-// kind: "keys" or "runs"
+// kind: "keys", "runs", "vials", or "runes"
 function getUserStats(kind, userId) {
   const cutoff = sevenDaysAgoMs();
 
-  if (kind === "keys") {
+  // Simple stats for keys, vials, runes
+  const simpleTableMap = {
+    keys: "keys_history",
+    vials: "vials_history",
+    runes: "runes_history",
+  };
+
+  if (simpleTableMap[kind]) {
+    const table = simpleTableMap[kind];
     const allTimeRow = db
-      .prepare(
-        "SELECT COALESCE(SUM(quantity), 0) AS total FROM keys_history WHERE user_id = ?"
-      )
+      .prepare(`SELECT COALESCE(SUM(quantity), 0) AS total FROM ${table} WHERE user_id = ?`)
       .get(userId);
     const weeklyRow = db
-      .prepare(
-        "SELECT COALESCE(SUM(quantity), 0) AS total FROM keys_history WHERE user_id = ? AND timestamp >= ?"
-      )
+      .prepare(`SELECT COALESCE(SUM(quantity), 0) AS total FROM ${table} WHERE user_id = ? AND timestamp >= ?`)
       .get(userId, cutoff);
 
     return {
@@ -232,6 +275,8 @@ module.exports = {
 
   // logging
   logKeys,
+  logVials,
+  logRunes,
   logRuns,
   getLeaderboard,
   getUserStats,

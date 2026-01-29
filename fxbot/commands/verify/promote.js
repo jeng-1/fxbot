@@ -47,7 +47,7 @@ module.exports = {
 
     const roleConfig = ROLE_MAP[roleKey];
     if (!roleConfig || !roleConfig.id) {
-      await interaction.editreply({
+      await interaction.editReply({
         content:
           "That role is not configured correctly. Please contact an admin." });
       return;
@@ -59,21 +59,21 @@ module.exports = {
     );
 
     if (!hasPermission) {
-      await interaction.editreply({
+      await interaction.editReply({
         content: "You do not have permission to use this command." });
       return;
     }
 
     const guildRole = interaction.guild.roles.cache.get(roleConfig.id);
     if (!guildRole) {
-      await interaction.editreply({
+      await interaction.editReply({
         content: `I could not find the ${roleConfig.label} role on this server. Please check the role ID in the configuration.` });
       return;
     }
 
     // Check if target already has the role
     if (targetMember.roles.cache.has(roleConfig.id)) {
-      await interaction.editreply({
+      await interaction.editReply({
         content: `${targetUser} already has the ${roleConfig.label} role.` });
       return;
     }
@@ -86,14 +86,14 @@ module.exports = {
       );
     } catch (err) {
       console.error("Failed to assign role in /promote:", err);
-      await interaction.editreply({
+      await interaction.editReply({
         content:
           "I was unable to assign that role. Check my role position and permissions."  });
       return;
     }
 
     // Acknowledge success
-    await interaction.editreply({
+    await interaction.editReply({
       content: `Successfully promoted ${targetUser} to ${roleConfig.label}.` });
 
     // Log to roles log channel

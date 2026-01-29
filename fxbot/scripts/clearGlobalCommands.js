@@ -1,7 +1,7 @@
 // clearGlobalCommands.js
 require("dotenv").config();
 const { REST, Routes } = require("discord.js");
-const config = require("./config");
+const config = require("../config");
 
 const rest = new REST({ version: "10" }).setToken(config.token);
 

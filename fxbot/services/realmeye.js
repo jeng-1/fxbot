@@ -1,4 +1,4 @@
-// utils/realmeye.js
+// services/realmeye.js
 // Fetch RealmEye-style data from your API.
 
 const fetch = require("node-fetch");

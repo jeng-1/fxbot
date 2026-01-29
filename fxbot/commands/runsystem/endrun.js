@@ -8,17 +8,30 @@ module.exports = {
     .setDescription("End the most recent run you started in the raid channel"),
 
   async execute(interaction) {
-    // Fetch raid channel
+    // Determine output channel based on command channel
+    let targetChannelId;
+    if (interaction.channelId === config.RAID_COMMANDS_CHANNEL_ID) {
+      targetChannelId = config.RAID_CHANNEL_ID;
+    } else if (interaction.channelId === config.COMPETENT_COMMANDS_CHANNEL_ID) {
+      targetChannelId = config.COMPETENT_CHANNEL_ID;
+    } else {
+      await interaction.editReply(
+        "This command can only be used in raid or competent command channels."
+      );
+      return;
+    }
+
+    // Fetch target channel
     let raidChannel;
     try {
-      raidChannel = await interaction.client.channels.fetch(config.RAID_CHANNEL_ID);
+      raidChannel = await interaction.client.channels.fetch(targetChannelId);
     } catch (err) {
-      console.error("Failed to fetch raid channel for /endrun:", err);
+      console.error("Failed to fetch target channel for /endrun:", err);
     }
 
     if (!raidChannel || !raidChannel.isTextBased()) {
       await interaction.editReply(
-        "I could not find the raid channel. Please check RAID_CHANNEL_ID in the env/config."
+        "I could not find the target channel. Please check channel IDs in the env/config."
       );
       return;
     }
@@ -62,8 +75,9 @@ module.exports = {
       (oldEmbed.title || "").replace(/^Run Started:\s*/i, "") || "Unknown";
 
     // Try to extract party from embed, but keep fallback
-    const partyMatch = (oldEmbed.description || "").match(/Party:\s*\*\*(.+?)\*\*/i);
-    const partyName = partyMatch ? partyMatch[1] : "Unknown";
+    // Format is: **Party:** value
+    const partyMatch = (oldEmbed.description || "").match(/\*\*Party:\*\*\s*(.+)/i);
+    const partyName = partyMatch ? partyMatch[1].trim() : "Unknown";
 
     // Build updated embed: mark as ended by this user
     const oldDesc = oldEmbed.description || "";

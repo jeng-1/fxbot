@@ -7,10 +7,12 @@
 
 const { SlashCommandBuilder, MessageFlags } = require("discord.js");
 const config = require("../../config");
-const { getUserStats } = require("../../utils/storage");
-const { requireStaff } = require("../../utils/permissions");
+const { getUserStats } = require("../../services/storage");
+const { requireStaff } = require("../../services/permissions");
 
 module.exports = {
+  skipDefer: true,
+
   data: new SlashCommandBuilder()
     .setName("quota")
     .setDescription("List Staff members with 0 runs logged in the past 7 days."),

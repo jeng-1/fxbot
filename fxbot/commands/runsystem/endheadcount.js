@@ -43,17 +43,30 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    // Fetch raid channel
+    // Determine output channel based on command channel
+    let targetChannelId;
+    if (interaction.channelId === config.RAID_COMMANDS_CHANNEL_ID) {
+      targetChannelId = config.RAID_CHANNEL_ID;
+    } else if (interaction.channelId === config.COMPETENT_COMMANDS_CHANNEL_ID) {
+      targetChannelId = config.COMPETENT_CHANNEL_ID;
+    } else {
+      await interaction.editReply(
+        "This command can only be used in raid or competent command channels."
+      );
+      return;
+    }
+
+    // Fetch target channel
     let raidChannel;
     try {
-      raidChannel = await interaction.client.channels.fetch(config.RAID_CHANNEL_ID);
+      raidChannel = await interaction.client.channels.fetch(targetChannelId);
     } catch (err) {
-      console.error("Failed to fetch raid channel for /endheadcount:", err);
+      console.error("Failed to fetch target channel for /endheadcount:", err);
     }
 
     if (!raidChannel || !raidChannel.isTextBased()) {
       await interaction.editReply(
-        "I could not find the raid channel. Please check RAID_CHANNEL_ID in the config."
+        "I could not find the target channel. Please check channel IDs in the config."
       );
       return;
     }
